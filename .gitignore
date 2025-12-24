@@ -1,0 +1,51 @@
+# Build results
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# Visual Studio specific
+.vs/
+*.user
+*.suo
+*.cache
+*.pdb
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+# (Except when you intentionally include packages)
+
+# Rider / VSCode
+.idea/
+.vscode/
+
+# Generated files
+*.dll
+*.exe
+
+# Publish output
+publish/
+dist/
+
+# Test-related
+TestResults/
+*.coverage
+*.coveragexml
+
+# System files
+Thumbs.db
+Desktop.ini
+
+# OS-specific
+.DS_Store   # macOS
