@@ -1,6 +1,9 @@
 using BusinessLogicLayer.Interfaces;
 using BusinessLogicLayer.Services;
 using DataLogicLayer.Context;
+using DataLogicLayer.Interfaces;
+using DataLogicLayer.MiddleWare;
+using DataLogicLayer.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +80,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddScoped<EmailService>();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 
 builder.Services.AddAuthorization();
@@ -86,6 +93,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "SampleApp:";
 });
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<INotesRepository, NotesRepository>();
+builder.Services.AddScoped<INotesService, NotesService>();
+
+
 
 
 
@@ -104,6 +115,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

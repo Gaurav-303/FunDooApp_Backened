@@ -1,40 +1,48 @@
 ﻿using BusinessLogicLayer.Interfaces;
-using DataLogicLayer.Context;
+using DataLogicLayer.Interfaces;
+using Microsoft.Extensions.Logging;
 using ModelLayer.Entity;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogicLayer.Services
 {
     public class NotesService : INotesService
     {
-        private readonly FundooContext _context;
-      
+        private readonly INotesRepository _notesRepository;
+        private readonly ILogger<NotesService> _logger;
 
-        public NotesService(FundooContext context)
+        public NotesService(
+            INotesRepository notesRepository,
+            ILogger<NotesService> logger)
         {
-            _context = context;
+            _notesRepository = notesRepository;
+            _logger = logger;
         }
 
         public void AddNote(int userId, Notes note)
         {
-            note.UserId = userId;
-            _context.Notes.Add(note);
-            _context.SaveChanges();
+            _logger.LogInformation("Adding note for UserId {UserId}", userId);
+            _notesRepository.AddNote(userId, note);
         }
 
         public List<Notes> GetMyNotes(int userId)
         {
-            return _context.Notes
-                .Where(n => n.UserId == userId)
-                .ToList();
+            _logger.LogInformation("Fetching notes for UserId {UserId}", userId);
+            return _notesRepository.GetNotesByUserId(userId);
         }
+
         public Notes GetNoteById(int noteId)
         {
-            return _context.Notes.FirstOrDefault(n => n.NoteId == noteId);
+            _logger.LogInformation("Fetching note with NoteId {NoteId}", noteId);
+
+            var note = _notesRepository.GetNoteById(noteId);
+
+            if (note == null)
+            {
+                _logger.LogWarning("No note found for NoteId {NoteId}", noteId);
+            }
+
+            return note;
         }
     }
 }
