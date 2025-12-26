@@ -1,5 +1,7 @@
 ﻿using BusinessLogicLayer.Interfaces;
+using DataLogicLayer.Context;
 using DataLogicLayer.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModelLayer.Entity;
 using System.Collections.Generic;
@@ -10,10 +12,11 @@ namespace BusinessLogicLayer.Services
     {
         private readonly INotesRepository _notesRepository;
         private readonly ILogger<NotesService> _logger;
+        private readonly FundooContext _context;
 
         public NotesService(
-            INotesRepository notesRepository,
-            ILogger<NotesService> logger)
+          INotesRepository notesRepository,
+          ILogger<NotesService> logger)
         {
             _notesRepository = notesRepository;
             _logger = logger;
@@ -44,5 +47,30 @@ namespace BusinessLogicLayer.Services
 
             return note;
         }
+        public bool UpdateNote(int userId, int noteId, Notes updatedNote)
+        {
+            var note = _context.Notes
+                .FirstOrDefault(n => n.NoteId == noteId && n.UserId == userId);
+
+            if (note == null) return false;
+
+            note.Title = updatedNote.Title;
+            note.Description = updatedNote.Description;
+
+            _context.SaveChanges();
+            return true;
+        }
+        public bool DeleteNote(int userId, int noteId)
+        {
+            var note = _context.Notes
+                .FirstOrDefault(n => n.NoteId == noteId && n.UserId == userId);
+
+            if (note == null) return false;
+
+            _context.Notes.Remove(note);
+            _context.SaveChanges();
+            return true;
+        }
+
     }
 }

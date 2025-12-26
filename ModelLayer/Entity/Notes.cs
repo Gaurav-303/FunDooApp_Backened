@@ -25,7 +25,9 @@ namespace ModelLayer.Entity
         public Users User { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string Description { get; set; }
+        public ICollection<NoteLabel> NoteLabels { get; set; }
 
-      
+
     }
 }

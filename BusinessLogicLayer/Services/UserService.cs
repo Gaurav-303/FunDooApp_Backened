@@ -49,7 +49,45 @@ namespace BusinessLogicLayer.Services
             
             return _jwtService.GenerateToken(user.UserId, user.Email);
         }
+        public UserResponseDto GetUserById(int userId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
 
-       
+            if (user == null)
+                return null;
+
+            return new UserResponseDto
+            {
+                UserId = user.UserId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email
+            };
+        }
+
+
+        public bool UpdateUser(int userId, UpdateUserDto dto)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null) return false;
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+
+            _context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteUser(int userId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null) return false;
+
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+            return true;
+        }
+
+
     }
 }

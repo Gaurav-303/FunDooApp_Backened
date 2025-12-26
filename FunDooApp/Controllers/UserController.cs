@@ -2,6 +2,8 @@
 using BusinessLogicLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using ModelLayer.DTOs;
+using System.Security.Claims;
+using ModelLayer.Entity;
 
 namespace FunDooApp.Controllers
 {
@@ -58,6 +60,53 @@ namespace FunDooApp.Controllers
                 message = "Login successful",
                 token = token
             });
+        }
+       
+        [HttpGet]
+        public IActionResult GetProfile()
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = _userService.GetUserById(userId);
+
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(user);
+        }
+        [HttpGet("{userId}")]
+        public IActionResult GetUserById(int userId)
+        {
+            var user = _userService.GetUserById(userId);
+
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            return Ok(user);
+        }
+
+
+        [HttpPut]
+        public IActionResult UpdateProfile(UpdateUserDto dto)
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            bool updated = _userService.UpdateUser(userId, dto);
+            if (!updated)
+                return NotFound("User not found");
+
+            return Ok("User updated successfully");
+        }
+
+        [HttpDelete]
+        public IActionResult DeleteAccount()
+        {
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            bool deleted = _userService.DeleteUser(userId);
+            if (!deleted)
+                return NotFound("User not found");
+
+            return Ok("User deleted successfully");
         }
     }
 }

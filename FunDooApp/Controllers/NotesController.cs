@@ -84,4 +84,29 @@ public class NotesController : ControllerBase
     {
         return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
     }
+    [HttpPut("{noteId}")]
+    public IActionResult UpdateNote(int noteId, Notes updatedNote)
+    {
+        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        var result = _notesService.UpdateNote(userId, noteId, updatedNote);
+
+        if (!result)
+            return NotFound("Note not found");
+
+        return Ok("Note updated successfully");
+    }
+    [HttpDelete("{noteId}")]
+    public IActionResult DeleteNote(int noteId)
+    {
+        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        var result = _notesService.DeleteNote(userId, noteId);
+
+        if (!result)
+            return NotFound("Note not found");
+
+        return Ok("Note deleted successfully");
+    }
 }
+

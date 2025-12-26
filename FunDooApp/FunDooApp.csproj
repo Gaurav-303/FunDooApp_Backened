@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BusinessLogicLayer\BusinessLogicLayer.csproj" />
+    <ProjectReference Include="..\DataLogicLayer\DataLogicLayer.csproj" />
+    <ProjectReference Include="..\ModelLayer\ModelLayer.csproj" />
   </ItemGroup>
 
 </Project>

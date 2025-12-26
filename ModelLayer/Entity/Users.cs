@@ -35,8 +35,7 @@ namespace ModelLayer.Entity
             [DataType(DataType.DateTime)]
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-            [DataType(DataType.DateTime)]
-            public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
+            
 
 
         

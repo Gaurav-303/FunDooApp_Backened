@@ -95,6 +95,9 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<INotesRepository, NotesRepository>();
 builder.Services.AddScoped<INotesService, NotesService>();
+builder.Services.AddScoped<ILabelRepository, LabelRepository>();
+builder.Services.AddScoped<ILabelService, LabelService>();
+
 
 
 
