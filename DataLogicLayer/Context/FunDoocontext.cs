@@ -15,7 +15,9 @@ namespace DataLogicLayer.Context
         public DbSet<Label> Labels { get; set; }
         public DbSet<NoteLabel> NoteLabels { get; set; }
         public DbSet<Users> Users { get; set; }
-        
+        public DbSet<Collaborator> Collaborators { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

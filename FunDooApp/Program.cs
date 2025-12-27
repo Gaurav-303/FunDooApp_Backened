@@ -98,6 +98,10 @@ builder.Services.AddScoped<INotesService, NotesService>();
 builder.Services.AddScoped<ILabelRepository, LabelRepository>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 
+builder.Services.AddScoped<ICollaboratorRepository, CollaboratorRepository>();
+builder.Services.AddScoped<ICollaboratorService, CollaboratorService>();
+
+
 
 
 

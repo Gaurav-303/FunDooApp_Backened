@@ -1,9 +1,16 @@
 ﻿using BusinessLogicLayer.Interfaces;
 using BusinessLogicLayer.Services;
+using DataLogicLayer.Context;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ModelLayer.DTOs;
-using System.Security.Claims;
 using ModelLayer.Entity;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace FunDooApp.Controllers
 {
@@ -15,17 +22,23 @@ namespace FunDooApp.Controllers
 
      
         private readonly EmailService _emailService;
-        
-       
+        private readonly FundooContext _context;
+        private readonly IConfiguration _config;
 
-        public UserController(IUserService userService, EmailService emailService)
+        public UserController(
+    FundooContext context,
+    IConfiguration config,
+    IUserService userService,
+    EmailService emailService)
         {
+            _context = context;
+            _config = config;
             _userService = userService;
             _emailService = emailService;
         }
 
-      
-        
+
+
         [HttpPost("register")]
         public IActionResult Register(RegisterUserDto dto)
         {
@@ -44,24 +57,62 @@ namespace FunDooApp.Controllers
 
             return Ok("User registered successfully. Email sent.");
         }
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login(LoginUserDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var token = _userService.Login(dto);
-
-            if (token == null)
-                return Unauthorized("Invalid email or password");
-
-            return Ok(new
+            try
             {
-                message = "Login successful",
-                token = token
-            });
+                var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+                if (user == null)
+                    return Unauthorized("Invalid email");
+
+                var hasher = new PasswordHasher<Users>();
+                var result = hasher.VerifyHashedPassword(
+                    user,
+                    user.Password,
+                    dto.Password
+                );
+
+                if (result == PasswordVerificationResult.Failed)
+                    return Unauthorized("Invalid password");
+
+                // generate token here
+                return Ok(new { token = GenerateJwt(user) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message); // TEMP for debugging
+            }
         }
-       
+        private string GenerateJwt(Users user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+            );
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(
+                    Convert.ToDouble(_config["Jwt:DurationInMinutes"])
+                ),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
         [HttpGet]
         public IActionResult GetProfile()
         {
