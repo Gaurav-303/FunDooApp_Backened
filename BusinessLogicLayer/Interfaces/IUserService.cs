@@ -16,6 +16,8 @@ namespace BusinessLogicLayer.Interfaces
         UserResponseDto GetUserById(int userId);
         bool UpdateUser(int userId, UpdateUserDto dto);
         bool DeleteUser(int userId);
+      bool ForgetPassword(string email);
+        bool ResetPassword(string token, string newPassword);
     }
 
 

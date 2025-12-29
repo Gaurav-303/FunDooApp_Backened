@@ -5,10 +5,11 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessLogicLayer.Interfaces;
 
 namespace BusinessLogicLayer.Services
 {
-    public class EmailService
+    public class EmailService:IEmailService
     {
         public void SendEmail(string to, string subject, string body)
         {

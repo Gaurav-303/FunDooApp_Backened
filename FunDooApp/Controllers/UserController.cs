@@ -159,5 +159,37 @@ namespace FunDooApp.Controllers
 
             return Ok("User deleted successfully");
         }
+        [HttpPost("forget-password")]
+        public IActionResult ForgetPassword([FromBody] ForgetPasswordDto dto)
+        {
+            var result = _userService.ForgetPassword(dto.Email);
+
+            if (!result)
+                return NotFound(new { message = "User not found" });
+
+            return Ok(new { message = "Reset link sent to email" });
+        }
+        [HttpPost("reset-password")]
+        public IActionResult ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                return BadRequest(new
+                {
+                    message = "New password and confirm password do not match"
+                });
+            }
+
+            var result = _userService.ResetPassword(dto.Token, dto.NewPassword);
+
+            if (!result)
+                return BadRequest(new { message = "Invalid or expired token" });
+
+            return Ok(new { message = "Password reset successful" });
+        }
+
+
+
     }
 }
