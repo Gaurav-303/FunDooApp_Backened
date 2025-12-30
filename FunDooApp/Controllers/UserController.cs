@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ModelLayer.CustomException;
 using ModelLayer.DTOs;
 using ModelLayer.Entity;
 using System.IdentityModel.Tokens.Jwt;
@@ -172,19 +173,15 @@ namespace FunDooApp.Controllers
         [HttpPost("reset-password")]
         public IActionResult ResetPassword([FromBody] ResetPasswordDto dto)
         {
-            
+
             if (dto.NewPassword != dto.ConfirmPassword)
-            {
-                return BadRequest(new
-                {
-                    message = "New password and confirm password do not match"
-                });
-            }
+                throw new AppException("Passwords do not match", 400);
 
-            var result = _userService.ResetPassword(dto.Token, dto.NewPassword);
+            _userService.ResetPassword(dto.Token, dto.NewPassword);
 
-            if (!result)
-                return BadRequest(new { message = "Invalid or expired token" });
+          
+
+          
 
             return Ok(new { message = "Password reset successful" });
         }

@@ -110,11 +110,15 @@ builder.Services.AddScoped<ICollaboratorService, CollaboratorService>();
 
 
 
+
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRouting();
+
+
 
 
 // Configure the HTTP request pipeline.
@@ -126,6 +130,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 

@@ -1,12 +1,15 @@
 ﻿using BusinessLogicLayer.Interfaces;
 using DataLogicLayer.Context;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using ModelLayer.CustomException;
 using ModelLayer.DTOs;
 using ModelLayer.Entity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
 
 namespace BusinessLogicLayer.Services
 {
@@ -66,7 +69,8 @@ namespace BusinessLogicLayer.Services
         public UserResponseDto GetUserById(int userId)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
-            if (user == null) return null;
+            if (user == null)
+                throw new AppException("User not found", 404);
 
             return new UserResponseDto
             {
@@ -165,7 +169,10 @@ namespace BusinessLogicLayer.Services
 
             return true;
         }
+       
+
+   
 
 
-    }
+}
 }
