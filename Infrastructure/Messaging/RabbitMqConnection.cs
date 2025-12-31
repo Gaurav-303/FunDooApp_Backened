@@ -1,12 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
-namespace Infrastructure.Messaging
+using System;
+
+namespace Infrastructure.Messaging;
+
+
+public static class RabbitMqConnection
 {
-    internal class RabbitMqConnection
+    public static IConnection GetConnection()
     {
+        var factory = new ConnectionFactory()
+        {
+            HostName = "localhost",
+            UserName = "guest",
+            Password = "guest"
+        };
+
+        return factory.CreateConnection();
     }
 }

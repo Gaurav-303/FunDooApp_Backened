@@ -1,6 +1,6 @@
 ﻿using BusinessLogicLayer.Interfaces;
 using DataLogicLayer.Context;
-using Microsoft.EntityFrameworkCore;
+using Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ModelLayer.CustomException;
@@ -10,26 +10,28 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-
 namespace BusinessLogicLayer.Services
 {
     public class UserService : IUserService
     {
         private readonly FundooContext _context;
         private readonly JwtService _jwtService;
-        private readonly IEmailService _emailService;
+        private readonly IEmailService _emailService; 
         private readonly IConfiguration _config;
+        private readonly IMessagePublisher _messagePublisher; 
 
         public UserService(
             FundooContext context,
             JwtService jwtService,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            IMessagePublisher messagePublisher) 
         {
             _context = context;
             _jwtService = jwtService;
             _emailService = emailService;
             _config = config;
+            _messagePublisher = messagePublisher;
         }
 
         // ---------------- REGISTER ----------------
@@ -48,6 +50,17 @@ namespace BusinessLogicLayer.Services
 
             _context.Users.Add(user);
             _context.SaveChanges();
+
+            // 📤 RabbitMQ publish
+            var message = new
+            {
+                Email = user.Email,
+                Subject = "Welcome to Fundoo",
+                Body = $"Hello {user.FirstName}, your registration is successful!"
+            };
+
+            _messagePublisher.Publish("email_queue", message);
+
             return true;
         }
 
@@ -88,14 +101,61 @@ namespace BusinessLogicLayer.Services
             if (user == null) return false;
 
             var token = GenerateResetToken(email);
-
             var link = $"https://localhost:3000/reset-password?token={token}";
 
-            _emailService.SendEmail(
-                email,
-                "Reset Your Fundoo Password",
-                $"<p>Click the link to reset password:</p><a href='{link}'>Reset Password</a>"
-            );
+            var message = new
+            {
+                Email = email,
+                Subject = "Reset Your Fundoo Password",
+                Body = $"<p>Click the link to reset password:</p><a href='{link}'>Reset Password</a>"
+            };
+
+            _messagePublisher.Publish("email_queue", message);
+
+            return true;
+        }
+
+        // ---------------- RESET PASSWORD ----------------
+        public bool ResetPassword(string token, string newPassword)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var email = jwtToken.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (email == null) return false;
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null) return false;
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            _context.SaveChanges();
+
+            return true;
+        }
+
+        // ---------------- UPDATE USER ----------------
+        public bool UpdateUser(int userId, UpdateUserDto dto)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null) return false;
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            _context.SaveChanges();
+
+            return true;
+        }
+
+        // ---------------- DELETE USER ----------------
+        public bool DeleteUser(int userId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null) return false;
+
+            _context.Users.Remove(user);
+            _context.SaveChanges();
 
             return true;
         }
@@ -127,52 +187,5 @@ namespace BusinessLogicLayer.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        // ---------------- UPDATE USER ----------------
-        public bool UpdateUser(int userId, UpdateUserDto dto)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
-            if (user == null) return false;
-
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
-
-            _context.SaveChanges();
-            return true;
-        }
-
-        // ---------------- DELETE USER ----------------
-        public bool DeleteUser(int userId)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
-            if (user == null) return false;
-
-            _context.Users.Remove(user);
-            _context.SaveChanges();
-            return true;
-        }
-        public bool ResetPassword(string token, string newPassword)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            var email = jwtToken.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
-            if (email == null) return false;
-
-            var user = _context.Users.FirstOrDefault(u => u.Email == email);
-            if (user == null) return false;
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-            _context.SaveChanges();
-
-            return true;
-        }
-       
-
-   
-
-
-}
+    }
 }

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Messaging
 {
-    internal class RabbitMqProducer
+    public interface IMessagePublisher
     {
+        void Publish<T>(string queueName, T message);
     }
 }

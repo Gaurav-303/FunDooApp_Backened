@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Infrastructure.Messaging;
 using System.Text;
 
 
@@ -101,6 +102,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<ICollaboratorRepository, CollaboratorRepository>();
 builder.Services.AddScoped<ICollaboratorService, CollaboratorService>();
+builder.Services.AddSingleton<IMessagePublisher, RabbitMqPublisher>();
+
 
 
 

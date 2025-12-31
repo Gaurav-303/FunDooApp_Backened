@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataLogicLayer\DataLogicLayer.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\ModelLayer\ModelLayer.csproj" />
   </ItemGroup>
 
